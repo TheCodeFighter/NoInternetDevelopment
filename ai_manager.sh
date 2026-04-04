@@ -5,71 +5,50 @@ COMMAND=$1
 COMPOSE_FILE="docker-compose.yml"
 
 case "$COMMAND" in
-    install)
-        echo "=== Initializing Installation and AI Environment ==="
-        
-        # Update system and install Docker & Compose
-        sudo apt-get update
-        sudo apt-get install -y docker.io docker-compose-v2 curl gnupg
-
-        # Install NVIDIA drivers if not present
-        sudo ubuntu-drivers autoinstall
-        
-        # Install NVIDIA Container Toolkit
-        # Why? It bridges the isolated Docker container to your RTX 4070 hardware.
-        curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --yes --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg
-        curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list | \
-            sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | \
-            sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
-        sudo apt-get update
-        sudo apt-get install -y nvidia-container-toolkit
-        
-        # Restart Docker to detect NVIDIA runtime
-        sudo systemctl restart docker
-
-        # Create the docker-compose.yml file
-        # Volume mapping (./ollama_data) ensures your Mistral/Codestral models persist after container stops.
-        cat <<EOF > $COMPOSE_FILE
-services:
-  ollama:
-    image: ollama/ollama:latest
-    container_name: ollama
-    volumes:
-      - ./ollama_data:/root/.ollama
-    ports:
-      - "11434:11434"
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
-    restart: unless-stopped
-EOF
-        echo "=== Installation successful. $COMPOSE_FILE created. ==="
-        echo "Next step: Run './ai_manager.sh up' to start the server."
-        ;;
-    
     up)
-        echo "=== Starting Ollama AI Server ==="
-        # '-d' (detached) runs it in the background so you can close the terminal.
-        sudo docker compose -f $COMPOSE_FILE up -d
-        echo "Server is running. Models are ready for VS Code."
+        echo "=== Starting AI Server (Ollama with NVIDIA GPU) ==="
+        docker compose -f $COMPOSE_FILE up -d
+        echo "Server is UP. Running on port 11434."
+        ;;
+
+    setup-models)
+        echo "=== Downloading Optimized Models for 8GB VRAM ==="
+        
+        echo "--- Pulling Mistral Nemo 12B ---"
+        docker exec -it ollama ollama pull mistral-nemo
+        
+        echo "--- Pulling Codestral 22B (Q4) ---"
+        docker exec -it ollama ollama pull codestral:22b-v0.1-q4_K_M
+        
+        # (Autocomplete)
+        echo "--- Pulling StarCoder2 3B ---"
+        docker exec -it ollama ollama pull starcoder2:3b
+
+        echo "--- Pulling Qwen coder ---"
+        docker exec -it ollama ollama pull qwen2.5-coder:1.5b
+
+        # for (@codebase)
+        echo "--- Pulling Embedding Model ---"
+        docker exec -it ollama ollama pull nomic-embed-text
+        
+        echo "=== All models installed and optimized! ==="
         ;;
     
+    status)
+        echo "=== Container Status ==="
+        docker compose ps
+        echo ""
+        echo "--- Loaded Models in Ollama ---"
+        docker exec -it ollama ollama list
+        ;;
+
     down)
-        echo "=== Stopping Ollama AI Server ==="
-        # 'down' completely stops the container and releases VRAM/RAM back to Ubuntu.
-        sudo docker compose -f $COMPOSE_FILE down
-        echo "Server stopped. Hardware resources released."
+        echo "=== Stopping Server & Freeing VRAM ==="
+        docker compose -f $COMPOSE_FILE down
         ;;
         
     *)
-        echo "Usage: $0 {install|up|down}"
-        echo "  install : Install Docker, NVIDIA toolkit, and create compose file"
-        echo "  up      : Start AI server in background"
-        echo "  down    : Stop AI server and free up VRAM"
+        echo "Usage: $0 {up|setup-models|status|down}"
         exit 1
         ;;
 esac
