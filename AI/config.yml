@@ -1,22 +1,26 @@
-profile: current
-runtime:
-  composeFile: ./docker-compose.yml
-  dataDir: ../ollama_data
-  endpoint: http://localhost:11434
-  containerName: ollama
-host:
-  os: ubuntu-24.x
-  gpu: nvidia
-  vram: 8GB
+name: Local Config
+version: 1.0.0
+schema: v1
 models:
-  chat:
-    - mistral-nemo
-    - codestral:22b-v0.1-q4_K_M
-  autocomplete:
-    - starcoder2:3b
-    - qwen2.5-coder:1.5b
-  embedding:
-    - nomic-embed-text
-notes:
-  - Keep ollama_data outside the AI folder to avoid accidental repo commits.
-  - Update this file whenever model choices change.
+  - name: Mistral Nemo
+    provider: ollama
+    model: mistral-nemo:latest
+    roles:
+      - chat
+  - name: Codestral
+    provider: ollama
+    model: codestral:22b-v0.1-q4_K_M
+    roles:
+      - chat
+  - name: Mistral Small
+    provider: ollama
+    model: mistral-small:24b
+    roles:
+      - chat
+  - name: Qwen Autocomplete
+    provider: ollama
+    model: qwen2.5-coder:1.5b
+    roles:
+      - autocomplete
+      - chat
+      - apply

@@ -31,9 +31,6 @@ case "$COMMAND" in
         echo "--- Pulling Codestral 22B (Q4) ---"
         docker exec "$CONTAINER_NAME" ollama pull codestral:22b-v0.1-q4_K_M
 
-        echo "--- Pulling StarCoder2 3B ---"
-        docker exec "$CONTAINER_NAME" ollama pull starcoder2:3b
-
         echo "--- Pulling Qwen coder 1.5B ---"
         docker exec "$CONTAINER_NAME" ollama pull qwen2.5-coder:1.5b
 

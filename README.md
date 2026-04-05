@@ -15,6 +15,7 @@ This repository is designed to support both online setup and offline operation.
 - [Component Guides](#component-guides)
 - [Storage and Data](#storage-and-data)
 - [Public Repository Notes](#public-repository-notes)
+- [Prune Safety](#prune-safety)
 - [Release Checklist](#release-checklist)
 
 ## Project Goals
@@ -84,6 +85,17 @@ Typical non-source artifacts to keep out of git:
 - model data (`ollama_data/`)
 - temporary staging output (`tmp/`)
 - built archives and large caches under external target paths
+
+## Prune Safety
+
+The Ollama models are stored in `ollama_data/` as a bind mount, so Docker prune commands do not remove the model files themselves.
+
+Rules of thumb:
+
+- Running containers are not removed by normal prune operations.
+- Docker prune can remove stopped containers and unused images, so keep `ollama` running if you want it protected.
+- There is no permanent Docker lock flag for a container; the real protection is where the data lives.
+- Back up `ollama_data/` before cleanup, migration, or major model changes.
 
 ## Release Checklist
 
