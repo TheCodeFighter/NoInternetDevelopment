@@ -2,3 +2,15 @@ ollama_data/
 .vscode/
 tmp/
 tmp*
+
+# Local environment and machine-specific overrides
+AI/.env
+AI/.env.*
+!AI/.env.example
+AI/*.local.yml
+
+# Prevent accidental commit if vault target path is set to repository root
+archives/
+manifests/
+logs/
+download_cache/

@@ -123,6 +123,7 @@ BUNDLE_LABELS=(
   "OS images + Embedded + VS Code plugins"
   "Documentation + Zeal docsets + hardware PDFs"
   "Kiwix offline knowledge"
+  "Briar communication"
 )
 
 BUNDLE_FUNCTIONS=(
@@ -132,6 +133,7 @@ BUNDLE_FUNCTIONS=(
   bundle_04_os_embedded_vscode
   bundle_05_documentation
   bundle_06_kiwix_knowledge
+  bundle_07_briar_communication
 )
 
 if [[ "${EUID}" -eq 0 ]]; then
@@ -328,6 +330,7 @@ Bundle plan (approx):
   4) OS images + Embedded tools + VSCode plugins ... ~5 GB
   5) Documentation + Zeal docsets + hardware PDFs .. ~5 GB
   6) Kiwix offline knowledge (StackOverflow) ....... ~40-60 GB
+  7) Briar communication (Android + Desktop + docs)  ~small
 
 NOT included:
   - AI model files (you already host them locally)
@@ -421,15 +424,15 @@ prompt_run_preferences() {
   done
 
   while true; do
-    read -r -p "Start from bundle number [1-6, default 1]: " choice
+    read -r -p "Start from bundle number [1-7, default 1]: " choice
     choice="${choice:-1}"
 
-    if [[ "$choice" =~ ^[1-6]$ ]]; then
+    if [[ "$choice" =~ ^[1-7]$ ]]; then
       START_BUNDLE_INDEX="$choice"
       break
     fi
 
-    echo "Please enter a number from 1 to 6."
+    echo "Please enter a number from 1 to 7."
   done
 
   echo
@@ -681,7 +684,7 @@ bundle_01_docker_debs_toolchains() {
   local docker_ok=0
   local docker_cmd=(docker)
 
-  log "=== Bundle 1/6: Docker + Debs + Toolchains ==="
+  log "=== Bundle 1/7: Docker + Debs + Toolchains ==="
   rm -rf "$bundle_dir"
   mkdir -p "$bundle_dir/debs" "$bundle_dir/docker" "$bundle_dir/meta" "$bundle_dir/meta/apt_markers"
 
@@ -781,7 +784,7 @@ bundle_02_python_node_frontend() {
   local npm_pack_marker
   local npm_cache_marker
 
-  log "=== Bundle 2/6: Python + Node + Frontend ==="
+  log "=== Bundle 2/7: Python + Node + Frontend ==="
   rm -rf "$bundle_dir"
   mkdir -p "$bundle_dir/python_wheels" "$bundle_dir/node/npm_packs" "$bundle_dir/node/npm_cache" "$bundle_dir/node/frontend_seed" "$bundle_dir/meta" "$bundle_dir/meta/pip_markers" "$bundle_dir/meta/npm_pack_markers"
 
@@ -913,7 +916,7 @@ bundle_03_cpp_sources() {
   local filename
   local url
 
-  log "=== Bundle 3/6: C/C++ source libraries ==="
+  log "=== Bundle 3/7: C/C++ source libraries ==="
   rm -rf "$bundle_dir"
   mkdir -p "$bundle_dir/sources" "$bundle_dir/meta"
 
@@ -943,7 +946,7 @@ bundle_04_os_embedded_vscode() {
   local core
   local core_marker
 
-  log "=== Bundle 4/6: OS images + embedded + VSCode plugins ==="
+  log "=== Bundle 4/7: OS images + embedded + VSCode plugins ==="
   rm -rf "$bundle_dir"
   mkdir -p "$bundle_dir/images" "$bundle_dir/arduino" "$bundle_dir/vscode" "$bundle_dir/meta" "$bundle_dir/meta/arduino_core_markers"
 
@@ -1038,7 +1041,7 @@ bundle_05_documentation() {
   local filename
   local url
 
-  log "=== Bundle 5/6: Documentation + Zeal + hardware PDFs ==="
+  log "=== Bundle 5/7: Documentation + Zeal + hardware PDFs ==="
   rm -rf "$bundle_dir"
   mkdir -p "$bundle_dir/docs" "$bundle_dir/meta"
 
@@ -1060,7 +1063,7 @@ bundle_06_kiwix_knowledge() {
   local bundle_key="06_kiwix_knowledge"
   local bundle_dir="$STAGING_ROOT/$bundle_key"
 
-  log "=== Bundle 6/6: Kiwix offline knowledge ==="
+  log "=== Bundle 6/7: Kiwix offline knowledge ==="
   rm -rf "$bundle_dir"
   mkdir -p "$bundle_dir/kiwix" "$bundle_dir/meta"
 
@@ -1084,6 +1087,91 @@ bundle_06_kiwix_knowledge() {
   fi
 
   sync_target_cache_to_stage_dir "$bundle_dir/kiwix"
+  sync_target_cache_to_stage_dir "$bundle_dir/meta"
+
+  archive_bundle "$bundle_key" "$bundle_dir"
+}
+
+bundle_07_briar_communication() {
+  local bundle_key="07_briar_communication"
+  local bundle_dir="$STAGING_ROOT/$bundle_key"
+
+  log "=== Bundle 7/7: Briar communication ==="
+  rm -rf "$bundle_dir"
+  mkdir -p "$bundle_dir/android" "$bundle_dir/desktop" "$bundle_dir/docs" "$bundle_dir/meta"
+
+  download_url \
+    "Briar Android APK" \
+    "https://briarproject.org/apk/briar.apk" \
+    "$bundle_dir/android/briar.apk"
+
+  download_url \
+    "Briar Mailbox APK" \
+    "https://briarproject.org/apk/mailbox.apk" \
+    "$bundle_dir/android/mailbox.apk"
+
+  download_url \
+    "Briar Desktop Ubuntu 24.04 DEB" \
+    "https://desktop.briarproject.org/debs/noble/briar-desktop-ubuntu-24.04.deb" \
+    "$bundle_dir/desktop/briar-desktop-ubuntu-24.04.deb"
+
+  download_url \
+    "Briar Desktop Linux x64 AppImage" \
+    "https://desktop.briarproject.org/appimage/briar-desktop-x64.AppImage" \
+    "$bundle_dir/desktop/briar-desktop-x64.AppImage"
+
+  download_url \
+    "Briar Download Page" \
+    "https://briarproject.org/download-briar/" \
+    "$bundle_dir/docs/briar-download.html"
+
+  download_url \
+    "Briar Desktop Download Page" \
+    "https://briarproject.org/download-briar-desktop/" \
+    "$bundle_dir/docs/briar-desktop-download.html"
+
+  download_url \
+    "Briar Direct APK Install Guide" \
+    "https://briarproject.org/installing-apps-via-direct-download/" \
+    "$bundle_dir/docs/briar-direct-download.html"
+
+  download_url \
+    "Briar Get Involved Page" \
+    "https://briarproject.org/get-involved/" \
+    "$bundle_dir/docs/briar-get-involved.html"
+
+  download_url \
+    "Briar Copyright Page" \
+    "https://briarproject.org/copyright/" \
+    "$bundle_dir/docs/briar-copyright.html"
+
+  cat > "$bundle_dir/meta/README.txt" <<'EOF'
+Briar communication bundle
+
+Android is the primary off-grid client.
+Use Briar Desktop on Ubuntu/Linux as a companion client.
+
+Offline documentation included in this bundle:
+- Briar download pages for Android and desktop
+- Briar direct APK install instructions
+- Briar get involved page
+- Briar copyright page
+
+Desktop capability note:
+- Briar Desktop supports private chats, groups, forums, blogs, LAN/Wi-Fi, Tor, and Briar Mailbox.
+- Briar Desktop does not support nearby Bluetooth contact addition.
+- Briar Android supports Bluetooth and nearby/off-grid contact setup.
+
+Recommended order:
+1. Install Briar Android.
+2. Install Briar Mailbox if you want better connectivity.
+3. Install Briar Desktop on Ubuntu if you want a second device.
+4. Pair or add contacts from Android first when Bluetooth/off-grid setup matters.
+EOF
+
+  sync_target_cache_to_stage_dir "$bundle_dir/android"
+  sync_target_cache_to_stage_dir "$bundle_dir/desktop"
+  sync_target_cache_to_stage_dir "$bundle_dir/docs"
   sync_target_cache_to_stage_dir "$bundle_dir/meta"
 
   archive_bundle "$bundle_key" "$bundle_dir"
@@ -1149,10 +1237,10 @@ run_selected_bundles() {
     bundle_array_index=$((bundle_index - 1))
 
     if [[ "$DOWNLOAD_GRANULARITY" == "bundle" ]]; then
-      prompt_enter_for_bundle "Bundle ${bundle_index}/6: ${BUNDLE_LABELS[$bundle_array_index]}"
+      prompt_enter_for_bundle "Bundle ${bundle_index}/${#BUNDLE_FUNCTIONS[@]}: ${BUNDLE_LABELS[$bundle_array_index]}"
     fi
 
-    log "Starting Bundle ${bundle_index}/6: ${BUNDLE_LABELS[$bundle_array_index]}"
+    log "Starting Bundle ${bundle_index}/${#BUNDLE_FUNCTIONS[@]}: ${BUNDLE_LABELS[$bundle_array_index]}"
     "${BUNDLE_FUNCTIONS[$bundle_array_index]}"
   done
 }

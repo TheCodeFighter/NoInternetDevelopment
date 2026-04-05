@@ -2,7 +2,23 @@
 
 This folder contains an Ubuntu 24.x bash script that prepares a large offline engineering vault for embedded, backend, and localhost frontend development.
 
-Script: vault_builder.sh
+Script: vault_builder_GHcopilot.sh
+
+## Table of Contents
+
+- [What gets downloaded](#what-gets-downloaded)
+- [Output layout on target device](#output-layout-on-target-device)
+- [Requirements](#requirements)
+- [Path examples: USB target and tmp staging](#path-examples-usb-target-and-tmp-staging)
+- [Rerun behavior](#rerun-behavior)
+- [Manifest behavior](#manifest-behavior)
+- [download_cache: why it exists and when to delete](#download_cache-why-it-exists-and-when-to-delete)
+- [How to use](#how-to-use)
+- [Offline first-use guide](#offline-first-use-guide)
+- [Offline bundle guide](#offline-bundle-guide)
+- [Offline usage examples](#offline-usage-examples)
+- [License and reuse notes](#license-and-reuse-notes)
+- [Notes](#notes)
 
 The script is interactive and lets you choose how the run behaves at startup.
 
@@ -162,6 +178,18 @@ Source archives for popular libs, including:
 - Latest StackOverflow full English ZIM from Kiwix index.
 - Latest Kiwix desktop client (AppImage or tarball fallback).
 
+### Bundle 7: Communication (Briar, offline and nearby messaging)
+
+- Briar Android APK for direct install on phones.
+- Briar Mailbox APK to improve message delivery when contacts are hard to reach.
+- Briar Desktop for Ubuntu 24.04 as a .deb package.
+- Briar Desktop for Linux x64 as an AppImage fallback.
+- Offline Briar documentation pages for install, desktop download, contribution, and copyright.
+
+Briar is the bundle for off-grid messaging, not a general internet chat app.
+Use Android for Bluetooth and nearby contact setup.
+Use Ubuntu/Linux Desktop for a companion client over LAN/Wi-Fi or Tor.
+
 ## Output layout on target device
 
 After a run, these folders are created under your chosen target path:
@@ -190,18 +218,53 @@ Inside logs/ you get two logs:
 If python3/pip/node/npm are missing on the online host, the script will try to install them automatically using sudo apt-get before bundle 2.
 If Docker is missing or unusable, the script will try to install docker.io and docker-compose-plugin and start the daemon before bundle 1.
 
+## Path examples: USB target and tmp staging
+
+Example values when prompted by the script:
+
+- Target path (USB/mounted disk): `/media/<user>/<usb-label>/Vault`
+- Staging path (project tmp folder): `/home/<user>/Projects/LocalAI/tmp`
+- Default staging path if you press Enter: `/tmp/offline_vault_stage_<RUN_ID>`
+
+## Rerun behavior
+
+- The script reuses the same target path and download cache when you run it again.
+- Finished items are reused from target_path/download_cache when possible.
+- Existing archives in target_path/archives are replaced when the same bundle is archived again.
+- If you start from a later bundle number, earlier bundles are skipped entirely.
+
+## Manifest behavior
+
+- target_path/manifests/run_manifest_<RUN_ID>.txt is written at the end of each run.
+- It records which bundles completed and which items failed.
+- It is a build record, not an input file that the script needs to continue.
+
+## download_cache: why it exists and when to delete
+
+Why it exists:
+
+- It stores completed downloads item-by-item under `target_path/download_cache`.
+- On reruns, the script can reuse these files instead of downloading again.
+- It helps recover from interrupted runs without restarting every bundle.
+
+When to delete it:
+
+- Keep it if you plan to rerun, rebuild, or update bundles later.
+- Delete it only when you are sure all final archives and `.sha256` files are complete and you no longer need fast reruns.
+- Deleting cache saves space but future runs may need to re-download many items.
+
 ## How to use
 
 1. Make script executable:
 
     ```bash
-    chmod +x Vault/GHcopilot/vault_builder.sh
+    chmod +x Vault/GHcopilot/vault_builder_GHcopilot.sh
     ```
 
 2. Run script:
 
     ```bash
-    ./Vault/GHcopilot/vault_builder.sh
+    ./Vault/GHcopilot/vault_builder_GHcopilot.sh
     ```
 
 3. Follow the prompts.
@@ -249,6 +312,7 @@ tar -xf /path/to/archives/03_cpp_sources.tar.*
 tar -xf /path/to/archives/04_os_embedded_vscode.tar.*
 tar -xf /path/to/archives/05_documentation.tar.*
 tar -xf /path/to/archives/06_kiwix_knowledge.tar.*
+tar -xf /path/to/archives/07_briar_communication.tar.*
 ```
 
 If the archive ends in .tar.zst, tar can usually extract it directly on modern Ubuntu systems. If not, install zstd on the offline machine ahead of time or use a machine that already has tar with zstd support.
@@ -408,6 +472,72 @@ chmod +x /path/to/extracted/06_kiwix_knowledge/kiwix/kiwix-desktop_latest_x86_64
 
 Once Kiwix is open, load stackoverflow_latest.zim from the kiwix folder.
 
+### Bundle 7: Briar communication
+
+Use this bundle when you want a messenger that can keep working with weak or no internet and nearby-device contact setup.
+
+Important capability split:
+
+- Briar Android is the primary off-grid client and supports Bluetooth and nearby contact setup.
+- Briar Desktop on Ubuntu/Linux is a companion client for LAN/Wi-Fi and Tor.
+- Briar Desktop does not support Bluetooth nearby contact addition.
+
+If you already have adb installed on the PC, you can install Briar Android from the APK like this:
+
+```bash
+adb install /path/to/extracted/07_briar_communication/android/briar.apk
+adb install /path/to/extracted/07_briar_communication/android/mailbox.apk
+```
+
+If you do not use adb, copy the APK to the phone and open it with a file manager or browser download picker, then allow app installs if Android asks.
+
+For Ubuntu 24.04, install the Briar Desktop .deb:
+
+```bash
+sudo apt install /path/to/extracted/07_briar_communication/desktop/briar-desktop-ubuntu-24.04.deb
+```
+
+If your Linux setup prefers AppImage, use the fallback instead:
+
+```bash
+chmod +x /path/to/extracted/07_briar_communication/desktop/briar-desktop-x64.AppImage
+/path/to/extracted/07_briar_communication/desktop/briar-desktop-x64.AppImage
+```
+
+Suggested setup order:
+
+1. Install Briar Android first.
+2. Install Briar Mailbox if you expect weak connectivity.
+3. Install Briar Desktop on Ubuntu if you want a second device.
+4. Add contacts from Android when you want the Bluetooth/off-grid workflow.
+5. Use Desktop for a companion session, not as the primary Bluetooth link.
+
+Offline Briar docs included in the bundle:
+
+- download-briar.html: main Android download page
+- download-briar-desktop.html: desktop package page with Linux, Windows, and macOS choices
+- briar-direct-download.html: Android APK direct-install instructions
+- briar-get-involved.html: source, build, chat, and contribution info
+- briar-copyright.html: Briar license and website copyright notes
+
+If you only want the docs and not the app binaries, open the HTML pages directly from the extracted docs folder in your browser or with xdg-open.
+
+How to use Briar offline:
+
+1. Open Briar.
+2. Create or unlock your identity.
+3. Add a contact by nearby connection, QR flow, or a shared link/code when the app offers it.
+4. Start a private chat or group.
+5. Keep the app open when you expect delayed delivery or sync.
+
+If the internet is unavailable, Briar still works best when at least one of these paths is available between devices:
+
+- Bluetooth on Android for nearby pairing.
+- Wi-Fi/LAN between devices.
+- Tor when you later have routed connectivity.
+
+For true off-grid work, keep Android as the main messaging device and use Linux as the companion device.
+
 ## Offline usage examples
 
 ### Docker images offline
@@ -461,6 +591,8 @@ This vault is meant for offline use on your own machines. In general, the downlo
 2. Binary tools and installers: usually fine to use for your own offline setup, but redistribution may be limited by the vendor's terms or trademark rules.
 3. Stack Overflow and other content collections: the content license matters, especially if you redistribute, mirror publicly, or republish excerpts.
 
+Briar itself is open source, and the downloads in this bundle come from the project's official distribution pages. Keep the upstream notices if you share the files or the bundle.
+
 For Stack Overflow specifically, the content is distributed under a Creative Commons Attribution-ShareAlike-style license, so attribution and share-alike obligations matter if you reuse or republish content outside your own machine.
 
 For personal offline development, the important rule is simple: keep the original notices, do not remove license files, and do not assume that every archive can be re-uploaded or bundled into another public project without checking its license first.
@@ -473,5 +605,5 @@ For personal offline development, the important rule is simple: keep the origina
 - The script attempts to auto-install missing python3/pip/node/npm tools with sudo apt-get before running bundle 2.
 - Docker apt seed packages are treated as optional, so a docker.io download failure will not stop the rest of bundle 1.
 - If you choose auto-skip, already-downloaded items are silently reused from the cache and you will not be prompted for them again.
-- For deterministic environments, pin package versions by editing arrays in vault_builder.sh.
+- For deterministic environments, pin package versions by editing arrays in vault_builder_GHcopilot.sh.
 - The script keeps a persistent item cache in target_path/download_cache so reruns can skip already-downloaded items item-by-item.
