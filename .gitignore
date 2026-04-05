@@ -1,2 +1,4 @@
 ollama_data/
 .vscode/
+tmp/
+tmp*
