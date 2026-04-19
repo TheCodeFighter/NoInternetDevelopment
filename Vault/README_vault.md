@@ -2,7 +2,7 @@
 
 This folder contains an Ubuntu 24.x bash script that prepares a large offline engineering vault for embedded, backend, and localhost frontend development.
 
-Script: vault_builder_GHcopilot.sh
+Script: vault_builder.sh
 
 ## Table of Contents
 
@@ -258,13 +258,13 @@ When to delete it:
 1. Make script executable:
 
     ```bash
-    chmod +x Vault/GHcopilot/vault_builder_GHcopilot.sh
+    chmod +x Vault/vault_builder.sh
     ```
 
 2. Run script:
 
     ```bash
-    ./Vault/GHcopilot/vault_builder_GHcopilot.sh
+    ./Vault/vault_builder.sh
     ```
 
 3. Follow the prompts.
@@ -605,5 +605,5 @@ For personal offline development, the important rule is simple: keep the origina
 - The script attempts to auto-install missing python3/pip/node/npm tools with sudo apt-get before running bundle 2.
 - Docker apt seed packages are treated as optional, so a docker.io download failure will not stop the rest of bundle 1.
 - If you choose auto-skip, already-downloaded items are silently reused from the cache and you will not be prompted for them again.
-- For deterministic environments, pin package versions by editing arrays in vault_builder_GHcopilot.sh.
+- For deterministic environments, pin package versions by editing arrays in vault_builder.sh.
 - The script keeps a persistent item cache in target_path/download_cache so reruns can skip already-downloaded items item-by-item.
