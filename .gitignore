@@ -14,3 +14,4 @@ archives/
 manifests/
 logs/
 download_cache/
+localai-ai-offline-*.tar*
