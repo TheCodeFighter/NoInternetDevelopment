@@ -1,6 +1,8 @@
 <a id="nointernet-workspace"></a>
 # 🌐 NoInternet Workspace
 
+<img src="NoInternetImg2_1.png" alt="Embedded engineering survival workspace banner" width="100%">
+
 > **NoInternet** is a two-part workspace designed to support both online setup and offline operation.
 
 - **local AI runtime** for coding and model experiments (Ollama on Docker)
