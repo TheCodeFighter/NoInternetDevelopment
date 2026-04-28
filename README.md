@@ -6,6 +6,8 @@
 - **local AI runtime** for coding and model experiments (Ollama on Docker)
 - **offline vault builder** for preparing portable engineering resources
 
+It is also oriented toward embedded and PC apps with offline libraries and documentation.
+
 <a id="table-of-contents"></a>
 ## 📖 Table of Contents
 
@@ -23,6 +25,7 @@
 
 - **Run local LLM tooling** on Ubuntu with NVIDIA GPU.
 - **Tested on PC with NVIDIA GeForce RTX 4060**.
+- **Support embedded and PC apps with offline libraries and docs.**
 - **Prepare an offline engineering vault** for development without internet.
 - **Keep downloaded assets portable** on USB or mounted storage.
 
